@@ -171,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return photoCaptions;
     }
 
+    // Displays the photo and date in the gallery given the path
     private void displayPhoto(String path) {
         ImageView iv = findViewById(R.id.ivMain);
         iv.setImageBitmap(BitmapFactory.decodeFile(path));
@@ -186,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    // Displays the photo caption given the path
     private void displayPhotoCaption(String path) {
         EditText photoCaptionEntry = findViewById(R.id.etPhotoCaption);
         try {
@@ -274,8 +276,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 photoGallery = populateGallery(fromDate, toDate);
                 photoCaptions = populateCaptions(fromDate, toDate);
                 Log.d("onCreate, size", Integer.toString(photoGallery.size()));
+                currentPhotoIndex = 0;
                 if (photoCaptions.size() > 0) {
-                    currentPhotoIndex = 0;
                     currentPhotoPath = photoGallery.get(currentPhotoIndex);
                     currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
                     displayPhoto(currentPhotoPath);
