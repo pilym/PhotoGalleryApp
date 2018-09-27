@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">PhotoGalleryApp</string>
+    <string name="camera_button_text">snap</string>
+    <string name="prev_picture_button_text">prev</string>
+    <string name="button_text_left">left</string>
+    <string name="button_text_right">right</string>
+    <string name="button_text_filter">filter</string>
+    <string name="button_text_take_picture">snap</string>
+    <string name="text_entry_caption">Caption your photo</string>
+</resources>
