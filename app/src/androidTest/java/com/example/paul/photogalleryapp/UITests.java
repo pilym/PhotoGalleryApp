@@ -24,8 +24,8 @@ public class UITests {
     @Test
     public void TestFilter() {
         onView(withId(R.id.btnFilter)).perform(click());
-        onView(withId(R.id.search_toDate)).perform(typeText("31/01/18"), closeSoftKeyboard());
-        onView(withId(R.id.search_fromDate)).perform(typeText("01/01/18"), closeSoftKeyboard());
+        onView(withId(R.id.search_toDate)).perform(typeText("31/01/2018"), closeSoftKeyboard());
+        onView(withId(R.id.search_fromDate)).perform(typeText("01/01/2018"), closeSoftKeyboard());
         onView(withId(R.id.search_search)).perform(click());
         for (int i = 0; i <= 5; i++) {
             onView(withId(R.id.btnRight)).perform(click());

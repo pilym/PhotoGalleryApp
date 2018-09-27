@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +32,7 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     public static final String IMAGES_DIRECTORY = Environment.DIRECTORY_PICTURES;
     public static final String CAPTIONS_DIRECTORY = Environment.DIRECTORY_DOCUMENTS;
+    public static final String DATE_FORMAT_PATTERN = "yyyyMMdd";
     public static final int SEARCH_ACTIVITY_REQUEST_CODE = 0;
     static final int CAMERA_REQUEST_CODE = 1;
     private String currentPhotoPath = null;
@@ -111,11 +114,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         assert imagesDir != null;
 
+        // filter names
+        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+
         // create list of file names
         File[] fList = imagesDir.listFiles();
         if (fList != null) {
             for (File f : imagesDir.listFiles()) {
-                photoGallery.add(f.getPath());
+                String fileName = f.getName();
+                String fileNameDate = fileName.split("_")[1];
+                Date fileDate;
+                try {
+                    fileDate = fmt.parse(fileNameDate);
+
+                    if (fileDate.after(minDate) && fileDate.before(maxDate)) {
+                        photoGallery.add(f.getPath());
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return photoGallery;
@@ -129,12 +146,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         assert captionsDir != null;
 
+        // filter names
+        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+
         // create list of captions
         File[] fList = captionsDir.listFiles();
 
         if (fList != null) {
             for (File f : captionsDir.listFiles()) {
-                photoCaptions.add(f.getPath());
+                String fileName = f.getName();
+                String fileNameDate = fileName.split("_")[1];
+                Date fileDate;
+                try {
+                    fileDate = fmt.parse(fileNameDate);
+
+                    if (fileDate.after(minDate) && fileDate.before(maxDate)) {
+                        photoCaptions.add(f.getPath());
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return photoCaptions;
@@ -214,14 +245,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("createImageFile", data.getStringExtra("STARTDATE"));
                 Log.d("createImageFile", data.getStringExtra("ENDDATE"));
 
-                photoGallery = populateGallery(new Date(), new Date());
-                photoCaptions = populateCaptions(new Date(), new Date());
+                String fromDateString = data.getStringExtra("STARTDATE");
+                String toDateString = data.getStringExtra("ENDDATE");
+
+                SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy");
+                Date fromDate;
+                Date toDate;
+                try {
+                    fromDate = fmt.parse(fromDateString);
+                    toDate = fmt.parse(toDateString);
+
+
+                } catch (ParseException e) {
+                    fromDate = new Date(Long.MIN_VALUE);
+                    toDate = new Date(Long.MAX_VALUE);
+                }
+
+                photoGallery = populateGallery(fromDate, toDate);
+                photoCaptions = populateCaptions(fromDate, toDate);
                 Log.d("onCreate, size", Integer.toString(photoGallery.size()));
-                currentPhotoIndex = 0;
-                currentPhotoPath = photoGallery.get(currentPhotoIndex);
-                currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
-                displayPhoto(currentPhotoPath);
-                displayPhotoCaption(currentPhotoCaptionPath);
+                if (photoCaptions.size() > 0) {
+                    currentPhotoIndex = 0;
+                    currentPhotoPath = photoGallery.get(currentPhotoIndex);
+                    currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
+                    displayPhoto(currentPhotoPath);
+                    displayPhotoCaption(currentPhotoCaptionPath);
+                }
             }
         }
         if (requestCode == CAMERA_REQUEST_CODE) {
