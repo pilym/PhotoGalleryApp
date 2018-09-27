@@ -17,16 +17,23 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    public static final String IMAGES_DIRECTORY = Environment.DIRECTORY_PICTURES;
+    public static final String CAPTIONS_DIRECTORY = Environment.DIRECTORY_DOCUMENTS;
     public static final int SEARCH_ACTIVITY_REQUEST_CODE = 0;
     static final int CAMERA_REQUEST_CODE = 1;
     private String currentPhotoPath = null;
+    private String currentPhotoCaptionPath = null;
     private int currentPhotoIndex = 0;
     private ArrayList<String> photoGallery;
     private ArrayList<String> photoCaptions;
@@ -37,9 +44,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         // set up buttons
-        Button btnLeft = (Button)findViewById(R.id.btnLeft);
-        Button btnRight = (Button)findViewById(R.id.btnRight);
-        Button btnFilter = (Button)findViewById(R.id.btnFilter);
+        Button btnLeft = findViewById(R.id.btnLeft);
+        Button btnRight = findViewById(R.id.btnRight);
+        Button btnFilter = findViewById(R.id.btnFilter);
         btnLeft.setOnClickListener(this);
         btnRight.setOnClickListener(this);
         btnFilter.setOnClickListener(filterListener);
@@ -59,22 +66,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (photoGallery.size() > 0) {
-                    photoCaptions.set(currentPhotoIndex, s.toString());
-                }
+                String newCaption = s.toString();
+                updateCaption(newCaption, currentPhotoIndex);
             }
         });
 
         Date minDate = new Date(Long.MIN_VALUE);
         Date maxDate = new Date(Long.MAX_VALUE);
+        photoCaptions = populateCaptions(minDate, maxDate);
         photoGallery = populateGallery(minDate, maxDate);
         Log.d("onCreate, size", Integer.toString(photoGallery.size()));
         if (photoGallery.size() > 0) {
             currentPhotoPath = photoGallery.get(currentPhotoIndex);
+            currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
         }
         displayPhoto(currentPhotoPath);
-        displayPhotoCaption(currentPhotoIndex);
+        displayPhotoCaption(currentPhotoCaptionPath);
     }
+
+    private void updateCaption(String newCaption, int currentPhotoIndex) {
+        File captionFile = new File(photoCaptions.get(currentPhotoIndex));
+        try {
+            FileWriter writer = new FileWriter(captionFile);
+            writer.write(newCaption);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private View.OnClickListener filterListener = new View.OnClickListener() {
         public void onClick(View v) {
             Intent i = new Intent(MainActivity.this, SearchActivity.class);
@@ -83,31 +104,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     private ArrayList<String> populateGallery(Date minDate, Date maxDate) {
-        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), getFilesDir().getAbsolutePath());
-        Log.d("populateGallery", "image path: " + file.toString());
+        // get list of images
+        File imagesDir = getExternalFilesDir(IMAGES_DIRECTORY);
+
         photoGallery = new ArrayList<String>();
-        File[] fList = file.listFiles();
+
+        assert imagesDir != null;
+
+        // create list of file names
+        File[] fList = imagesDir.listFiles();
         if (fList != null) {
-            for (File f : file.listFiles()) {
+            for (File f : imagesDir.listFiles()) {
                 photoGallery.add(f.getPath());
             }
         }
         return photoGallery;
     }
+
+    private ArrayList<String> populateCaptions(Date minDate, Date maxDate) {
+        // get list of captions
+        File captionsDir = getExternalFilesDir(CAPTIONS_DIRECTORY);
+
+        photoCaptions = new ArrayList<String>();
+
+        assert captionsDir != null;
+
+        // create list of captions
+        File[] fList = captionsDir.listFiles();
+
+        if (fList != null) {
+            for (File f : captionsDir.listFiles()) {
+                photoCaptions.add(f.getPath());
+            }
+        }
+        return photoCaptions;
+    }
+
     private void displayPhoto(String path) {
-        ImageView iv = (ImageView) findViewById(R.id.ivMain);
+        ImageView iv = findViewById(R.id.ivMain);
         iv.setImageBitmap(BitmapFactory.decodeFile(path));
     }
 
-    private void displayPhotoCaption(int photoIndex) {
-        // check if there's photos
-        if (photoGallery.size() > 0) {
-            // find the caption for the photo
-            EditText photoCaptionEntry = findViewById(R.id.etPhotoCaption);
-            // display caption
-            photoCaptionEntry.setText(photoCaptions.get(photoIndex));
+    private void displayPhotoCaption(String path) {
+        EditText photoCaptionEntry = findViewById(R.id.etPhotoCaption);
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String caption = br.readLine();
+            photoCaptionEntry.setText(caption);
+        } catch (FileNotFoundException e) {
+            photoCaptionEntry.setText("");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
     }
 
     @Override
@@ -139,9 +187,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         // get new photo and caption from index
         currentPhotoPath = photoGallery.get(currentPhotoIndex);
+        currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
+
         Log.d("phpotoleft, size", Integer.toString(photoGallery.size()));
         Log.d("photoleft, index", Integer.toString(currentPhotoIndex));
         displayPhoto(currentPhotoPath);
+        displayPhotoCaption(currentPhotoCaptionPath);
     }
 
 
@@ -164,19 +215,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("createImageFile", data.getStringExtra("ENDDATE"));
 
                 photoGallery = populateGallery(new Date(), new Date());
+                photoCaptions = populateCaptions(new Date(), new Date());
                 Log.d("onCreate, size", Integer.toString(photoGallery.size()));
                 currentPhotoIndex = 0;
                 currentPhotoPath = photoGallery.get(currentPhotoIndex);
+                currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
                 displayPhoto(currentPhotoPath);
+                displayPhotoCaption(currentPhotoCaptionPath);
             }
         }
         if (requestCode == CAMERA_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Log.d("createImageFile", "Picture Taken");
                 photoGallery = populateGallery(new Date(), new Date());
+                photoCaptions = populateCaptions(new Date(), new Date());
                 currentPhotoIndex = 0;
                 currentPhotoPath = photoGallery.get(currentPhotoIndex);
+                currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
                 displayPhoto(currentPhotoPath);
+                displayPhotoCaption(currentPhotoCaptionPath);
             }
         }
     }
@@ -203,12 +260,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File picturesDir = getExternalFilesDir(IMAGES_DIRECTORY);
+        File captionsDir = getExternalFilesDir(CAPTIONS_DIRECTORY);
 
-        Log.d("createImageFile", "directory path: " + dir.toString());
-        File image = File.createTempFile(imageFileName, ".jpg", dir);
+        // create image file
+        File image = File.createTempFile(imageFileName, ".jpg", picturesDir);
         currentPhotoPath = image.getAbsolutePath();
         Log.d("createImageFile", "image path: " + currentPhotoPath);
+
+        // create empty caption file for image
+        File caption = File.createTempFile(imageFileName, ".txt", captionsDir);
         return image;
     }
 

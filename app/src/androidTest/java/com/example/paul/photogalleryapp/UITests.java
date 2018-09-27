@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -19,11 +20,6 @@ public class UITests {
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule =
             new ActivityTestRule<>(MainActivity.class);
-
-    @Test
-    public void TestPicture() {
-
-    }
 
     @Test
     public void TestFilter() {
@@ -40,7 +36,7 @@ public class UITests {
     public void TestCaptionSaving() {
         String testCaption = "test caption";
         // enter caption for photo
-        onView(withId(R.id.etPhotoCaption)).perform(typeText(testCaption), closeSoftKeyboard());
+        onView(withId(R.id.etPhotoCaption)).perform(replaceText(testCaption), closeSoftKeyboard());
 
         // go to another photo then go back
         onView(withId(R.id.btnRight)).perform(click());
@@ -52,17 +48,17 @@ public class UITests {
 
     @Test
     public void TestCaptionSavingMultiplePhotos() {
-        String testCaption1 = "test caption";
-        String testCaption2 = "my dream house";
+        String testCaption1 = "my dream house";
+        String testCaption2 = "test caption";
 
         // enter caption for photo
-        onView(withId(R.id.etPhotoCaption)).perform(typeText(testCaption1), closeSoftKeyboard());
+        onView(withId(R.id.etPhotoCaption)).perform(replaceText(testCaption1), closeSoftKeyboard());
 
         // go to another photo
         onView(withId(R.id.btnRight)).perform(click());
 
         // enter caption for other photo
-        onView(withId(R.id.etPhotoCaption)).perform(typeText(testCaption2), closeSoftKeyboard());
+        onView(withId(R.id.etPhotoCaption)).perform(replaceText(testCaption2), closeSoftKeyboard());
 
         // go back to first photo and check if caption is saved
         onView(withId(R.id.btnLeft)).perform(click());
