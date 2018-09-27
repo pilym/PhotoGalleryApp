@@ -174,6 +174,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void displayPhoto(String path) {
         ImageView iv = findViewById(R.id.ivMain);
         iv.setImageBitmap(BitmapFactory.decodeFile(path));
+
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        TextView date = findViewById(R.id.photoTimestamp);
+        try {
+            String[] photoPathSplit = path.split("_");
+            String photoDateUnformatted = photoPathSplit[1] + "_" + photoPathSplit[2];
+            date.setText(fmt.parse(photoDateUnformatted).toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void displayPhotoCaption(String path) {
