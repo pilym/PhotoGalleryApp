@@ -16,6 +16,9 @@ public class SearchActivity extends AppCompatActivity {
 
     private EditText fromDate;
     private EditText toDate;
+    private EditText topLeft;
+    private EditText bottomRight;
+    private EditText keywords;
     private Calendar fromCalendar;
     private Calendar toCalendar;
     private DatePickerDialog.OnDateSetListener fromListener;
@@ -25,8 +28,11 @@ public class SearchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-        fromDate = (EditText) findViewById(R.id.search_fromDate);
-        toDate   = (EditText) findViewById(R.id.search_toDate);
+        fromDate = findViewById(R.id.search_fromDate);
+        toDate   = findViewById(R.id.search_toDate);
+        topLeft = findViewById(R.id.search_topLeft);
+        bottomRight = findViewById(R.id.search_bottomRight);
+        keywords = findViewById(R.id.search_keyword);
     }
 
 
@@ -38,7 +44,12 @@ public class SearchActivity extends AppCompatActivity {
         Intent i = new Intent();
         i.putExtra("STARTDATE", fromDate.getText().toString());
         i.putExtra("ENDDATE", toDate.getText().toString());
+        i.putExtra("TOPLEFT", topLeft.getText().toString());
+        i.putExtra("BOTTOMRIGHT", bottomRight.getText().toString());
+        i.putExtra("KEYWORDS", keywords.getText().toString());
         setResult(RESULT_OK, i);
         finish();
     }
+
+
 }

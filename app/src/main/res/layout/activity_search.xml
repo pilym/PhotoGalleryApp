@@ -82,4 +82,67 @@
         android:id="@+id/search_search"
         android:onClick="search" />
 
+    <EditText
+        android:id="@+id/search_topLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_toDate"
+        android:layout_alignEnd="@+id/title_search"
+        android:layout_marginTop="21dp"
+        android:layout_marginEnd="0dp"
+        android:ems="10"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/search_bottomRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_topLeft"
+        android:layout_alignEnd="@+id/title_search"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="167dp"
+        android:ems="10"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/search_keyword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/title_search"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="106dp"
+        android:ems="10"
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_toDateLabel"
+        android:layout_alignEnd="@+id/search_toDateLabel"
+        android:layout_marginTop="46dp"
+        android:layout_marginEnd="0dp"
+        android:text="Top Left:" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView"
+        android:layout_alignBottom="@+id/textView2"
+        android:layout_marginTop="41dp"
+        android:layout_marginBottom="0dp"
+        android:text="Bottom Right:" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textView"
+        android:layout_alignBottom="@+id/search_keyword"
+        android:layout_marginStart="-1dp"
+        android:layout_marginBottom="13dp"
+        android:text="Keywords:" />
+
 </RelativeLayout>
