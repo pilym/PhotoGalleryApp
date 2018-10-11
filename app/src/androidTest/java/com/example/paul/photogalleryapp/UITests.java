@@ -94,7 +94,7 @@ public class UITests {
         onView(withId(R.id.search_toDate)).perform(typeText(testDate3), closeSoftKeyboard());
         onView(withId(R.id.search_search)).perform(click());
         for (int i = 0; i <= 2; i++) {
-            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString(testDate3))));
+            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString(testDateDisplay1))));
             onView(withId(R.id.btnRight)).perform(click());
         }
     }
@@ -119,15 +119,15 @@ public class UITests {
         onView(withId(R.id.search_search)).perform(click());
         // 2 pics from Sept 25, 2 from 26, 1 from 30
         for (int i = 0; i <= 2; i++) {
-            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString("Sep 25"))));
+            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString(testDateDisplay1))));
             onView(withId(R.id.btnRight)).perform(click());
         }
         for (int i = 0; i <= 2; i++) {
-            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString("Sep 26"))));
+            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString(testDateDisplay2))));
             onView(withId(R.id.btnRight)).perform(click());
         }
         for (int i = 0; i <= 1; i++) {
-            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString("Sep 30"))));
+            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString(testDateDisplay3))));
             onView(withId(R.id.btnRight)).perform(click());
         }
     }
@@ -137,7 +137,7 @@ public class UITests {
         onView(withId(R.id.btnFilter)).perform(click());
         onView(withId(R.id.search_topLeftLat)).perform(typeText(testLat1), closeSoftKeyboard());
         onView(withId(R.id.search_topLeftLong)).perform(typeText(testLong1), closeSoftKeyboard());
-        onView(withId(R.id.search_topLeftLong)).perform(typeText(testLat3), closeSoftKeyboard());
+        onView(withId(R.id.search_bottomRightLat)).perform(typeText(testLat3), closeSoftKeyboard());
         onView(withId(R.id.search_bottomRightLong)).perform(typeText(testLong4), closeSoftKeyboard());
         onView(withId(R.id.search_search)).perform(click());
         onView(withId(R.id.photoLocation)).check(matches(withText(containsString(testLatDisplay1))));
