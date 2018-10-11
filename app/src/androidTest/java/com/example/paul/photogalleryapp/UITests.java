@@ -90,11 +90,11 @@ public class UITests {
     @Test
     public void TestDateFilter() {
         onView(withId(R.id.btnFilter)).perform(click());
-        onView(withId(R.id.search_toDate)).perform(typeText(testDate1), closeSoftKeyboard());
-        onView(withId(R.id.search_fromDate)).perform(typeText(testDate1), closeSoftKeyboard());
+        onView(withId(R.id.search_fromDate)).perform(typeText(testDate3), closeSoftKeyboard());
+        onView(withId(R.id.search_toDate)).perform(typeText(testDate3), closeSoftKeyboard());
         onView(withId(R.id.search_search)).perform(click());
         for (int i = 0; i <= 2; i++) {
-            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString("Thu Sep 27"))));
+            onView(withId(R.id.photoTimestamp)).check(matches(withText(containsString(testDate3))));
             onView(withId(R.id.btnRight)).perform(click());
         }
     }
@@ -102,8 +102,8 @@ public class UITests {
     @Test
     public void TestDateFilterNoPhotosFound() {
         onView(withId(R.id.btnFilter)).perform(click());
-        onView(withId(R.id.search_toDate)).perform(typeText("01/01/2018"), closeSoftKeyboard());
-        onView(withId(R.id.search_fromDate)).perform(typeText("25/01/2018"), closeSoftKeyboard());
+        onView(withId(R.id.search_fromDate)).perform(typeText("01/01/2018"), closeSoftKeyboard());
+        onView(withId(R.id.search_toDate)).perform(typeText("25/01/2018"), closeSoftKeyboard());
         onView(withId(R.id.search_search)).perform(click());
         for (int i = 0; i <= 2; i++) {
             onView(withId(R.id.photoTimestamp)).check(matches(withText("")));
@@ -114,8 +114,8 @@ public class UITests {
     @Test
     public void TestDateFilterOverManyDays() {
         onView(withId(R.id.btnFilter)).perform(click());
-        onView(withId(R.id.search_toDate)).perform(typeText("25/09/2018"), closeSoftKeyboard());
-        onView(withId(R.id.search_fromDate)).perform(typeText("30/09/2018"), closeSoftKeyboard());
+        onView(withId(R.id.search_fromDate)).perform(typeText("25/09/2018"), closeSoftKeyboard());
+        onView(withId(R.id.search_toDate)).perform(typeText("30/09/2018"), closeSoftKeyboard());
         onView(withId(R.id.search_search)).perform(click());
         // 2 pics from Sept 25, 2 from 26, 1 from 30
         for (int i = 0; i <= 2; i++) {

@@ -171,6 +171,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Date fileDate;
                 try {
                     fileDate = fmt.parse(fileNameDate);
+                    Log.d("fileNameDate", fileDate.toString());
+                    Log.d("min", minDate.toString());
+                    Log.d("max", maxDate.toString());
 
                     if (fileDate.after(minDate) && fileDate.before(maxDate)) {
                         photoGallery.add(f.getPath());
