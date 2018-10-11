@@ -1,11 +1,17 @@
 package com.example.paul.photogalleryapp;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -17,7 +23,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.location.LocationListener;
-import android.location.Location;
 import android.location.LocationManager;
 
 import java.io.BufferedReader;
@@ -25,29 +30,33 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, LocationListener {
     public static final String IMAGES_DIRECTORY = Environment.DIRECTORY_PICTURES;
-    public static final String CAPTIONS_DIRECTORY = Environment.DIRECTORY_DOCUMENTS;
+    public static final String IMAGEINFO_DIRECTORY = Environment.DIRECTORY_DOCUMENTS;
     public static final String DATE_FORMAT_PATTERN = "yyyyMMdd";
     public static final int SEARCH_ACTIVITY_REQUEST_CODE = 0;
+    public static final Date MIN_DATE = new Date(Long.MIN_VALUE);
+    public static final Date MAX_DATE = new Date(Long.MAX_VALUE);
     static final int CAMERA_REQUEST_CODE = 1;
     private String currentPhotoPath = null;
     private String currentPhotoCaptionPath = null;
     private int currentPhotoIndex = 0;
     private ArrayList<String> photoGallery;
     private ArrayList<String> photoCaptions;
+    private LocationManager locationManager;
+    private Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         // set up buttons
         Button btnLeft = findViewById(R.id.btnLeft);
@@ -77,24 +86,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        Date minDate = new Date(Long.MIN_VALUE);
-        Date maxDate = new Date(Long.MAX_VALUE);
-        photoCaptions = populateCaptions(minDate, maxDate);
-        photoGallery = populateGallery(minDate, maxDate);
+        photoCaptions = populateCaptions(MIN_DATE, MAX_DATE);
+        photoGallery = populateGallery(MIN_DATE, MAX_DATE);
         Log.d("onCreate, size", Integer.toString(photoGallery.size()));
         if (photoGallery.size() > 0) {
+            if (currentPhotoIndex >= photoGallery.size()) {
+                currentPhotoIndex = 0;
+            }
             currentPhotoPath = photoGallery.get(currentPhotoIndex);
             currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
+            displayPhoto(currentPhotoPath);
+            displayPhotoInfo(currentPhotoCaptionPath);
         }
-        displayPhoto(currentPhotoPath);
-        displayPhotoCaption(currentPhotoCaptionPath);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 400, 1, this);
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    1);
+        }
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationManager.removeUpdates(this);
+        }
     }
 
     private void updateCaption(String newCaption, int currentPhotoIndex) {
-        File captionFile = new File(photoCaptions.get(currentPhotoIndex));
+        File imageDataFile = new File(photoCaptions.get(currentPhotoIndex));
         try {
-            FileWriter writer = new FileWriter(captionFile);
-            writer.write(newCaption);
+            BufferedReader br = new BufferedReader(new FileReader(imageDataFile));
+            String oldCaption = br.readLine();
+            String lat = br.readLine();
+            String lng = br.readLine();
+
+            FileWriter writer = new FileWriter(imageDataFile);
+            writer.write(String.format("%s\n%s\n%s", newCaption, lat, lng));
             writer.flush();
             writer.close();
         } catch (IOException e) {
@@ -143,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ArrayList<String> populateCaptions(Date minDate, Date maxDate) {
         // get list of captions
-        File captionsDir = getExternalFilesDir(CAPTIONS_DIRECTORY);
+        File captionsDir = getExternalFilesDir(IMAGEINFO_DIRECTORY);
 
         photoCaptions = new ArrayList<String>();
 
@@ -191,22 +229,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // Displays the photo caption given the path
-    private void displayPhotoCaption(String path) {
+    private void displayPhotoInfo(String path) {
+        // display photo caption
         EditText photoCaptionEntry = findViewById(R.id.etPhotoCaption);
+        TextView photoLocation = findViewById(R.id.photoLocation);
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String caption = br.readLine();
             photoCaptionEntry.setText(caption);
+
+            String latitude = br.readLine();
+            String longitude = br.readLine();
+            if (latitude.equals("null") || longitude.equals("null")) {
+                photoLocation.setText(R.string.tvLocationUnknown);
+            } else {
+                photoLocation.setText(String.format("%s: %s, %s: %s", getString(R.string.tvLcationLat), latitude, getString(R.string.tvLcationLong), longitude));
+            }
+
         } catch (FileNotFoundException e) {
             photoCaptionEntry.setText("");
+            photoLocation.setText(R.string.tvLocationUnknown);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
     }
 
     public void onClick(View v) {
@@ -238,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d("phpotoleft, size", Integer.toString(photoGallery.size()));
         Log.d("photoleft, index", Integer.toString(currentPhotoIndex));
         displayPhoto(currentPhotoPath);
-        displayPhotoCaption(currentPhotoCaptionPath);
+        displayPhotoInfo(currentPhotoCaptionPath);
     }
 
 
@@ -252,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         i.putExtra("DISPLAY_TEXT", x);
         startActivity(i);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -270,35 +318,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     fromDate = fmt.parse(fromDateString);
                     toDate = fmt.parse(toDateString);
 
-
                 } catch (ParseException e) {
-                    fromDate = new Date(Long.MIN_VALUE);
-                    toDate = new Date(Long.MAX_VALUE);
+                    fromDate = MIN_DATE;
+                    toDate = MAX_DATE;
                 }
 
                 photoGallery = populateGallery(fromDate, toDate);
                 photoCaptions = populateCaptions(fromDate, toDate);
                 Log.d("onCreate, size", Integer.toString(photoGallery.size()));
-                currentPhotoIndex = 0;
-                if (photoCaptions.size() > 0) {
-                    currentPhotoPath = photoGallery.get(currentPhotoIndex);
-                    currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
-                    displayPhoto(currentPhotoPath);
-                    displayPhotoCaption(currentPhotoCaptionPath);
-                }
             }
-        }
-        if (requestCode == CAMERA_REQUEST_CODE) {
+        } else if (requestCode == CAMERA_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Log.d("createImageFile", "Picture Taken");
-                photoGallery = populateGallery(new Date(), new Date());
-                photoCaptions = populateCaptions(new Date(), new Date());
-                currentPhotoIndex = 0;
-                currentPhotoPath = photoGallery.get(currentPhotoIndex);
-                currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
-                displayPhoto(currentPhotoPath);
-                displayPhotoCaption(currentPhotoCaptionPath);
+                photoGallery = populateGallery(MIN_DATE, MAX_DATE);
+                photoCaptions = populateCaptions(MIN_DATE, MAX_DATE);
+
             }
+        }
+
+        currentPhotoIndex = 0;
+        if (photoCaptions.size() > 0) {
+            currentPhotoPath = photoGallery.get(currentPhotoIndex);
+            currentPhotoCaptionPath = photoCaptions.get(currentPhotoIndex);
+            displayPhoto(currentPhotoPath);
+            displayPhotoInfo(currentPhotoCaptionPath);
         }
     }
 
@@ -325,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File picturesDir = getExternalFilesDir(IMAGES_DIRECTORY);
-        File captionsDir = getExternalFilesDir(CAPTIONS_DIRECTORY);
+        File imageInfoDir = getExternalFilesDir(IMAGEINFO_DIRECTORY);
 
         // create image file
         File image = File.createTempFile(imageFileName, ".jpg", picturesDir);
@@ -333,9 +376,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d("createImageFile", "image path: " + currentPhotoPath);
 
         // create empty caption file for image
-        File caption = File.createTempFile(imageFileName, ".txt", captionsDir);
+        File imageData = File.createTempFile(imageFileName, ".txt", imageInfoDir);
+        FileWriter writer = new FileWriter(imageData);
+        writer.write('\n');
+        writer.write(String.valueOf(location.getLatitude()));
+        writer.write('\n');
+        writer.write(String.valueOf(location.getLongitude()));
+        writer.flush();
+        writer.close();
+
         return image;
     }
 
 
+    @Override
+    public void onLocationChanged(Location location) {
+        this.location = location;
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED)
+                locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return;
+    }
 }

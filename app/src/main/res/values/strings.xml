@@ -7,4 +7,7 @@
     <string name="button_text_filter">filter</string>
     <string name="button_text_take_picture">snap</string>
     <string name="text_entry_caption">Caption your photo</string>
+    <string name="tvLcationLat">lat</string>
+    <string name="tvLcationLong">long</string>
+    <string name="tvLocationUnknown">unknown location</string>
 </resources>

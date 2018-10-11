@@ -83,35 +83,34 @@
         android:onClick="search" />
 
     <EditText
-        android:id="@+id/search_topLeft"
-        android:layout_width="wrap_content"
+        android:id="@+id/search_topLeftLat"
+        android:layout_width="91dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/search_toDate"
         android:layout_alignEnd="@+id/title_search"
         android:layout_marginTop="21dp"
-        android:layout_marginEnd="0dp"
+        android:layout_marginEnd="124dp"
         android:ems="10"
-        android:inputType="numberDecimal" />
+        android:inputType="numberSigned|numberDecimal" />
 
     <EditText
-        android:id="@+id/search_bottomRight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/search_topLeft"
+        android:id="@+id/search_bottomRightLat"
+        android:layout_width="90dp"
+        android:layout_height="46dp"
+        android:layout_below="@+id/search_topLeftLat"
         android:layout_alignEnd="@+id/title_search"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="18dp"
-        android:layout_marginBottom="167dp"
+        android:layout_marginTop="17dp"
+        android:layout_marginEnd="125dp"
         android:ems="10"
-        android:inputType="numberDecimal" />
+        android:inputType="numberSigned|numberDecimal" />
 
     <EditText
         android:id="@+id/search_keyword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/search_bottomRightLong"
         android:layout_alignEnd="@+id/title_search"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="106dp"
+        android:layout_marginTop="16dp"
         android:ems="10"
         android:inputType="textPersonName" />
 
@@ -139,10 +138,32 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/textView2"
         android:layout_alignStart="@+id/textView"
         android:layout_alignBottom="@+id/search_keyword"
         android:layout_marginStart="-1dp"
+        android:layout_marginTop="47dp"
         android:layout_marginBottom="13dp"
         android:text="Keywords:" />
+
+    <EditText
+        android:id="@+id/search_topLeftLong"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_toDate"
+        android:layout_alignEnd="@+id/title_search"
+        android:layout_marginTop="21dp"
+        android:ems="10"
+        android:inputType="numberSigned|numberDecimal" />
+
+    <EditText
+        android:id="@+id/search_bottomRightLong"
+        android:layout_width="96dp"
+        android:layout_height="44dp"
+        android:layout_below="@+id/search_topLeftLong"
+        android:layout_alignEnd="@+id/title_search"
+        android:layout_marginTop="18dp"
+        android:ems="10"
+        android:inputType="numberSigned|numberDecimal" />
 
 </RelativeLayout>
