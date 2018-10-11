@@ -257,6 +257,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return photoGallery;
     }
 
+    private ArrayList<String> populateCaptionsByDate(Date minDate, Date maxDate) {
+        // get list of captions
+        File captionsDir = getExternalFilesDir(IMAGEINFO_DIRECTORY);
+
+        photoCaptions = new ArrayList<String>();
+
+        assert captionsDir != null;
+
+        // filter names
+        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+
+        // create list of captions
+        File[] fList = captionsDir.listFiles();
+
+        if (fList != null) {
+            for (File f : captionsDir.listFiles()) {
+                String fileName = f.getName();
+                String fileNameDate = fileName.split("_")[1];
+                Date fileDate;
+                try {
+                    fileDate = fmt.parse(fileNameDate);
+
+                    if (fileDate.after(minDate) && fileDate.before(maxDate)) {
+                        photoCaptions.add(f.getPath());
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return photoCaptions;
+    }
+
     // Displays the photo and date in the gallery given the path
     private void displayPhoto(String path) {
         ImageView iv = findViewById(R.id.ivMain);
@@ -385,8 +418,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             bottomRightLong = MAX_LONGITUDE;
                         }
 
-                        photoGallery = populateGalleryByDate(fromDate, toDate);
-                        photoCaptions = populateCaptionsByDate(fromDate, toDate);
+                        photoCaptions = populateCaptionsByLocation(topLeftLat, topLeftLong, bottomRightLat, bottomRightLong);
                         break;
                     case SEARCH_BYKEYWORDS:
                         break;
