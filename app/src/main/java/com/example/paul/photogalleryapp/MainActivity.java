@@ -43,6 +43,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int SEARCH_ACTIVITY_REQUEST_CODE = 0;
     public static final Date MIN_DATE = new Date(Long.MIN_VALUE);
     public static final Date MAX_DATE = new Date(Long.MAX_VALUE);
+    public static final Float MIN_LATITUDE = -90.0f;
+    public static final Float MAX_LATITUDE = 90.0f;
+    public static final Float MIN_LONGITUDE = -180.0f;
+    public static final Float MAX_LONGITUDE = 180.f;
     static final int CAMERA_REQUEST_CODE = 1;
     private String currentPhotoPath = null;
     private String currentPhotoCaptionPath = null;
@@ -86,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        photoCaptions = populateCaptions(MIN_DATE, MAX_DATE);
-        photoGallery = populateGallery(MIN_DATE, MAX_DATE);
+        photoCaptions = populateCaptionsByDate(MIN_DATE, MAX_DATE);
+        photoGallery = populateGalleryByDate(MIN_DATE, MAX_DATE);
         Log.d("onCreate, size", Integer.toString(photoGallery.size()));
         if (photoGallery.size() > 0) {
             if (currentPhotoIndex >= photoGallery.size()) {
@@ -147,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    private ArrayList<String> populateGallery(Date minDate, Date maxDate) {
+    private ArrayList<String> populateGalleryByLocation(Date minDate, Date maxDate) {
         // get list of images
         File imagesDir = getExternalFilesDir(IMAGES_DIRECTORY);
 
@@ -179,11 +183,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return photoGallery;
     }
 
-    private ArrayList<String> populateCaptions(Date minDate, Date maxDate) {
+    private ArrayList<String> populateCaptionsByLocation(Float topLeftLat, Float topLeftLong,
+                                                        Float bottomRightLat, Float bottomRightLong) {
         // get list of captions
         File captionsDir = getExternalFilesDir(IMAGEINFO_DIRECTORY);
 
-        photoCaptions = new ArrayList<String>();
+        ArrayList<String> photoCaptions = new ArrayList<>();
 
         assert captionsDir != null;
 
@@ -199,17 +204,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String fileNameDate = fileName.split("_")[1];
                 Date fileDate;
                 try {
+                    BufferedReader br = new BufferedReader(new FileReader(f));
+                    String caption = br.readLine();
+                    Float lat = Float.parseFloat(br.readLine());
+                    Float lng = Float.parseFloat(br.readLine());
+
+
+                    if (lat <= topLeftLat && lat >= bottomRightLat
+                            && lng >= topLeftLong && lng <= bottomRightLat) {
+                        photoCaptions.add(f.getPath());
+                    }
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return photoCaptions;
+    }
+
+    private ArrayList<String> populateGalleryByDate(Date minDate, Date maxDate) {
+        // get list of images
+        File imagesDir = getExternalFilesDir(IMAGES_DIRECTORY);
+
+        photoGallery = new ArrayList<String>();
+
+        assert imagesDir != null;
+
+        // filter names
+        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+
+        // create list of file names
+        File[] fList = imagesDir.listFiles();
+        if (fList != null) {
+            for (File f : imagesDir.listFiles()) {
+                String fileName = f.getName();
+                String fileNameDate = fileName.split("_")[1];
+                Date fileDate;
+                try {
                     fileDate = fmt.parse(fileNameDate);
 
                     if (fileDate.after(minDate) && fileDate.before(maxDate)) {
-                        photoCaptions.add(f.getPath());
+                        photoGallery.add(f.getPath());
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
         }
-        return photoCaptions;
+        return photoGallery;
     }
 
     // Displays the photo and date in the gallery given the path
@@ -305,33 +350,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SEARCH_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                Log.d("createImageFile", data.getStringExtra("STARTDATE"));
-                Log.d("createImageFile", data.getStringExtra("ENDDATE"));
+                PhotoHelper.SEARCH_TYPE searchType = (PhotoHelper.SEARCH_TYPE) data.getSerializableExtra("SEARCHTYPE");
 
-                String fromDateString = data.getStringExtra("STARTDATE");
-                String toDateString = data.getStringExtra("ENDDATE");
+                switch (searchType) {
+                    case SEARCH_BYTIME:
+                        Log.d("createImageFile", data.getStringExtra("STARTDATE"));
+                        Log.d("createImageFile", data.getStringExtra("ENDDATE"));
 
-                SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy");
-                Date fromDate;
-                Date toDate;
-                try {
-                    fromDate = fmt.parse(fromDateString);
-                    toDate = fmt.parse(toDateString);
+                        String fromDateString = data.getStringExtra("STARTDATE");
+                        String toDateString = data.getStringExtra("ENDDATE");
 
-                } catch (ParseException e) {
-                    fromDate = MIN_DATE;
-                    toDate = MAX_DATE;
+                        filterPhotosByDate(fromDateString, toDateString);
+                        break;
+                    case SEARCH_BYLOCATION:
+                        String topLeftLatString = data.getStringExtra("TOPLEFTLAT");
+                        String topLeftLongString = data.getStringExtra("TOPLEFTLONG");
+                        String bottomRightLatString = data.getStringExtra("BOTTOMRIGHTLAT");
+                        String bottomRightLongString = data.getStringExtra("BOTTOMRIGHTLONG");
+
+                        Float topLeftLat;
+                        Float topLeftLong;
+                        Float bottomRightLat;
+                        Float bottomRightLong;
+                        try {
+                            topLeftLat = Float.parseFloat(topLeftLatString);
+                            topLeftLong = Float.parseFloat(topLeftLongString);
+                            bottomRightLat = Float.parseFloat(bottomRightLatString);
+                            bottomRightLong = Float.parseFloat(bottomRightLongString);
+
+                        } catch (NumberFormatException e) {
+                            topLeftLat = MAX_LATITUDE;
+                            topLeftLong = MIN_LONGITUDE;
+                            bottomRightLat = MIN_LATITUDE;
+                            bottomRightLong = MAX_LONGITUDE;
+                        }
+
+                        photoGallery = populateGalleryByDate(fromDate, toDate);
+                        photoCaptions = populateCaptionsByDate(fromDate, toDate);
+                        break;
+                    case SEARCH_BYKEYWORDS:
+                        break;
+                    default:
+                        photoGallery = populateGalleryByDate(MIN_DATE, MAX_DATE);
+                        photoCaptions = populateCaptionsByDate(MIN_DATE, MAX_DATE);
+
                 }
 
-                photoGallery = populateGallery(fromDate, toDate);
-                photoCaptions = populateCaptions(fromDate, toDate);
                 Log.d("onCreate, size", Integer.toString(photoGallery.size()));
             }
         } else if (requestCode == CAMERA_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Log.d("createImageFile", "Picture Taken");
-                photoGallery = populateGallery(MIN_DATE, MAX_DATE);
-                photoCaptions = populateCaptions(MIN_DATE, MAX_DATE);
+                photoGallery = populateGalleryByDate(MIN_DATE, MAX_DATE);
+                photoCaptions = populateCaptionsByDate(MIN_DATE, MAX_DATE);
 
             }
         }
@@ -343,6 +414,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             displayPhoto(currentPhotoPath);
             displayPhotoInfo(currentPhotoCaptionPath);
         }
+    }
+
+    private void filterPhotosByDate(String fromDateString, String toDateString) {
+        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy");
+        Date fromDate;
+        Date toDate;
+        try {
+            fromDate = fmt.parse(fromDateString);
+            toDate = fmt.parse(toDateString);
+
+        } catch (ParseException e) {
+            fromDate = MIN_DATE;
+            toDate = MAX_DATE;
+        }
+
+        photoGallery = populateGalleryByDate(fromDate, toDate);
+        photoCaptions = populateCaptionsByDate(fromDate, toDate);
     }
 
     public void takePicture(View v) {

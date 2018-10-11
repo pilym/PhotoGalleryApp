@@ -43,13 +43,32 @@ public class SearchActivity extends AppCompatActivity {
 
     public void search(final View v) {
         Intent i = new Intent();
-        i.putExtra("STARTDATE", fromDate.getText().toString());
-        i.putExtra("ENDDATE", toDate.getText().toString());
-        i.putExtra("TOPLEFTLAT", topLeftLat.getText().toString());
-        i.putExtra("TOPLEFTLONG", topLeftLong.getText().toString());
-        i.putExtra("BOTTOMRIGHTLAT", bottomRightLat.getText().toString());
-        i.putExtra("BOTTOMRIGHTLONG", bottomRightLong.getText().toString());
-        i.putExtra("KEYWORDS", keywords.getText().toString());
+        String fromDateEntry = fromDate.getText().toString();
+        String toDateEntry = toDate.getText().toString();
+        String topLeftLatEntry = topLeftLat.getText().toString();
+        String topLeftLongEntry = topLeftLong.getText().toString();
+        String bottomRightLatEntry = bottomRightLat.getText().toString();
+        String bottomRightLongEntry = bottomRightLong.getText().toString();
+        String keywordsEntry = keywords.getText().toString();
+
+        boolean timeFiltersSet = !fromDateEntry.isEmpty() && !toDateEntry.isEmpty();
+        boolean locationFiltersSet = !topLeftLatEntry.isEmpty() && !topLeftLongEntry.isEmpty()
+                && !bottomRightLatEntry.isEmpty() && bottomRightLongEntry.isEmpty();
+        boolean keywordsFilterSet = !keywordsEntry.isEmpty();
+        if (timeFiltersSet) {
+            i.putExtra("SEARCHTYPE", PhotoHelper.SEARCH_TYPE.SEARCH_BYTIME);
+            i.putExtra("STARTDATE", fromDate.getText().toString());
+            i.putExtra("ENDDATE", toDate.getText().toString());
+        } else if (locationFiltersSet) {
+            i.putExtra("SEARCHTYPE", PhotoHelper.SEARCH_TYPE.SEARCH_BYLOCATION);
+            i.putExtra("TOPLEFTLAT", topLeftLat.getText().toString());
+            i.putExtra("TOPLEFTLONG", topLeftLong.getText().toString());
+            i.putExtra("BOTTOMRIGHTLAT", bottomRightLat.getText().toString());
+            i.putExtra("BOTTOMRIGHTLONG", bottomRightLong.getText().toString());
+        } else if (keywordsFilterSet) {
+            i.putExtra("SEARCHTYPE", PhotoHelper.SEARCH_TYPE.SEARCH_BYKEYWORDS);
+            i.putExtra("KEYWORDS", keywords.getText().toString());
+        }
         setResult(RESULT_OK, i);
         finish();
     }
