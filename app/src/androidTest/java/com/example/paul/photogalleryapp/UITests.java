@@ -145,6 +145,14 @@ public class UITests {
     }
 
     @Test
+    public void TestCaptionFilter() {
+        onView(withId(R.id.btnFilter)).perform(click());
+        onView(withId(R.id.search_keyword)).perform(typeText(testCaption1), closeSoftKeyboard());
+        onView(withId(R.id.search_search)).perform(click());
+        onView(withId(R.id.etPhotoCaption)).check(matches(withText(containsString(testCaption1))));
+    }
+
+    @Test
     public void TestCaptionSaving() {
         String testCaption = "test caption";
         // enter caption for photo

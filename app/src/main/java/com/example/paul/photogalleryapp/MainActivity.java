@@ -175,7 +175,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d("min", minDate.toString());
                     Log.d("max", maxDate.toString());
 
-                    if (fileDate.after(minDate) && fileDate.before(maxDate)) {
+                    if ((fileDate.after(minDate) && fileDate.before(maxDate))
+                            || fileDate.equals(minDate) || fileDate.equals(maxDate)) {
                         photoGallery.add(f.getPath());
                     }
                 } catch (ParseException e) {
@@ -214,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                     if (lat <= topLeftLat && lat >= bottomRightLat
-                            && lng >= topLeftLong && lng <= bottomRightLat) {
+                            && lng >= topLeftLong && lng <= bottomRightLong) {
                         photoCaptions.add(f.getPath());
                     }
 
@@ -225,6 +226,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }
+
+
         return photoCaptions;
     }
 
@@ -422,6 +425,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
 
                         photoCaptions = populateCaptionsByLocation(topLeftLat, topLeftLong, bottomRightLat, bottomRightLong);
+                        photoGallery = new ArrayList<>();
+                        for (String filepath : photoCaptions) {
+                            photoGallery.add(filepath.replace(".txt", ".jpg"));
+                        }
                         break;
                     case SEARCH_BYKEYWORDS:
                         break;
@@ -502,9 +509,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         File imageData = File.createTempFile(imageFileName, ".txt", imageInfoDir);
         FileWriter writer = new FileWriter(imageData);
         writer.write('\n');
-        writer.write(String.valueOf(location.getLatitude()));
-        writer.write('\n');
-        writer.write(String.valueOf(location.getLongitude()));
+        try {
+            writer.write(String.valueOf(location.getLatitude()));
+            writer.write('\n');
+            writer.write(String.valueOf(location.getLongitude()));
+        } catch (Exception e) {
+            writer.write("x");
+            writer.write('\n');
+            writer.write("x");
+        }
+
         writer.flush();
         writer.close();
 

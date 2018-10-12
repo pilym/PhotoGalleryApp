@@ -52,8 +52,10 @@ public class SearchActivity extends AppCompatActivity {
         String keywordsEntry = keywords.getText().toString();
 
         boolean timeFiltersSet = !fromDateEntry.isEmpty() && !toDateEntry.isEmpty();
-        boolean locationFiltersSet = !topLeftLatEntry.isEmpty() && !topLeftLongEntry.isEmpty()
-                && !bottomRightLatEntry.isEmpty() && bottomRightLongEntry.isEmpty();
+        boolean locationFiltersSet = !topLeftLatEntry.isEmpty()
+                && !topLeftLongEntry.isEmpty()
+                && !bottomRightLatEntry.isEmpty()
+                && !bottomRightLongEntry.isEmpty();
         boolean keywordsFilterSet = !keywordsEntry.isEmpty();
         if (timeFiltersSet) {
             i.putExtra("SEARCHTYPE", PhotoHelper.SEARCH_TYPE.SEARCH_BYTIME);
