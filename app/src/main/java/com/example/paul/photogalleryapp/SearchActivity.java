@@ -1,13 +1,10 @@
 package com.example.paul.photogalleryapp;
 
-import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-
-import java.util.Calendar;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -18,10 +15,6 @@ public class SearchActivity extends AppCompatActivity {
     private EditText bottomRightLat;
     private EditText bottomRightLong;
     private EditText keywords;
-    private Calendar fromCalendar;
-    private Calendar toCalendar;
-    private DatePickerDialog.OnDateSetListener fromListener;
-    private DatePickerDialog.OnDateSetListener toListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +63,8 @@ public class SearchActivity extends AppCompatActivity {
         } else if (keywordsFilterSet) {
             i.putExtra("SEARCHTYPE", PhotoHelper.SEARCH_TYPE.SEARCH_BYKEYWORDS);
             i.putExtra("KEYWORDS", keywords.getText().toString());
+        } else {
+            i.putExtra("SEARCHTYPE", PhotoHelper.SEARCH_TYPE.NONE);
         }
         setResult(RESULT_OK, i);
         finish();

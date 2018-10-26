@@ -10,4 +10,5 @@
     <string name="tvLcationLat">lat</string>
     <string name="tvLcationLong">long</string>
     <string name="tvLocationUnknown">unknown location</string>
+    <string name="tvDateUnknown">Time unknown</string>
 </resources>
