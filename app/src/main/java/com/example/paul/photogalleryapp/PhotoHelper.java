@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class PhotoHelper {
+class PhotoHelper {
 
     static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -18,7 +18,7 @@ public class PhotoHelper {
     }
 
     // convert from bitmap to byte array
-    public static byte[] convertBitmapToBytes(Bitmap bitmap) {
+    static byte[] convertBitmapToBytes(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
         try {
@@ -30,7 +30,7 @@ public class PhotoHelper {
     }
 
     // convert from byte array to bitmap
-    public static Bitmap covertBytesToBitmap(byte[] image) {
+    static Bitmap covertBytesToBitmap(byte[] image) {
         return BitmapFactory.decodeByteArray(image, 0, image.length);
     }
 }

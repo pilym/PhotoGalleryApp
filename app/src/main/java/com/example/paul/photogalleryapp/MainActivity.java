@@ -117,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Photo photo = photoGallery.get(galleryIndex);
         long photoId = photo.getId();
 
+        // sync database with gallery
+        photo.setCaption(newCaption);
         db.updatePhotoCaption(photoId, newCaption);
     }
 
@@ -178,25 +180,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (photoGallery.size() == 0) {
+            galleryIndex = 0;
             return;
         }
-        // get new photo and caption from index
 
-        Log.d("photoleft, size", Integer.toString(photoGallery.size()));
-        Log.d("photoleft, index", Integer.toString(galleryIndex));
         displayPhoto(galleryIndex);
     }
 
+    public void onLeftBtnClick() {
+        if (photoGallery.size() == 0 || galleryIndex <= 0) {
+            galleryIndex = 0;
+            return;
+        }
 
-    public void goToSettings(View v) {
-        Intent i = new Intent(this, SettingsActivity.class);
-        startActivity(i);
+        --galleryIndex;
+
+        displayPhoto(galleryIndex);
     }
 
-    public void goToDisplay(String x) {
-        Intent i = new Intent(this, DisplayActivity.class);
-        i.putExtra("DISPLAY_TEXT", x);
-        startActivity(i);
+    public void onRightBtnClick() {
+        int gallerySize = photoGallery.size() - 1;
+        if (photoGallery.size() == 0 || galleryIndex >= gallerySize) {
+            galleryIndex = gallerySize - 1;
+            return;
+        }
+
+        ++galleryIndex;
+
+        displayPhoto(galleryIndex);
     }
 
     @Override
@@ -208,46 +219,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 switch (searchType) {
                     case SEARCH_BYTIME:
-                        Log.d("createImageFile", data.getStringExtra("STARTDATE"));
-                        Log.d("createImageFile", data.getStringExtra("ENDDATE"));
-
-                        SimpleDateFormat fmt = new SimpleDateFormat(PhotoHelper.DATE_FORMAT);
-                        try {
-                            Date fromDate = fmt.parse(data.getStringExtra("STARTDATE"));
-                            Date toDate = fmt.parse(data.getStringExtra("ENDDATE"));
-                            photoGallery = db.readPhotosDateFilter(fromDate, toDate);
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-
-
+                        populateGalleryByTime(data);
                         break;
                     case SEARCH_BYLOCATION:
-                        String topLeftLatString = data.getStringExtra("TOPLEFTLAT");
-                        String topLeftLongString = data.getStringExtra("TOPLEFTLONG");
-                        String bottomRightLatString = data.getStringExtra("BOTTOMRIGHTLAT");
-                        String bottomRightLongString = data.getStringExtra("BOTTOMRIGHTLONG");
-
-                        Double topLeftLat;
-                        Double topLeftLong;
-                        Double bottomRightLat;
-                        Double bottomRightLong;
-                        try {
-                            topLeftLat = Double.parseDouble(topLeftLatString);
-                            topLeftLong = Double.parseDouble(topLeftLongString);
-                            bottomRightLat = Double.parseDouble(bottomRightLatString);
-                            bottomRightLong = Double.parseDouble(bottomRightLongString);
-
-                        } catch (NumberFormatException e) {
-                            topLeftLat = MAX_LATITUDE;
-                            topLeftLong = MIN_LONGITUDE;
-                            bottomRightLat = MIN_LATITUDE;
-                            bottomRightLong = MAX_LONGITUDE;
-                        }
-
-                        photoGallery = db.readPhotosLocationFilter(topLeftLat, topLeftLong, bottomRightLat, bottomRightLong);
+                        populateGalleryByLocation(data);
                         break;
                     case SEARCH_BYKEYWORDS:
+                        populateGalleryByKeywords(data);
                         break;
                     default:
                         photoGallery = db.readAllPhotos();
@@ -270,6 +248,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (photoGallery.size() > 0) {
             displayPhoto(galleryIndex);
         }
+    }
+
+    private void populateGalleryByTime(Intent data) {
+        SimpleDateFormat fmt = new SimpleDateFormat(PhotoHelper.DATE_FORMAT);
+        try {
+            Date fromDate = fmt.parse(data.getStringExtra("STARTDATE"));
+            Date toDate = fmt.parse(data.getStringExtra("ENDDATE"));
+            photoGallery = db.readPhotosDateFilter(fromDate, toDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void populateGalleryByLocation(Intent data) {
+        String topLeftLatString = data.getStringExtra("TOPLEFTLAT");
+        String topLeftLongString = data.getStringExtra("TOPLEFTLONG");
+        String bottomRightLatString = data.getStringExtra("BOTTOMRIGHTLAT");
+        String bottomRightLongString = data.getStringExtra("BOTTOMRIGHTLONG");
+
+        Double topLeftLat;
+        Double topLeftLong;
+        Double bottomRightLat;
+        Double bottomRightLong;
+        try {
+            topLeftLat = Double.parseDouble(topLeftLatString);
+            topLeftLong = Double.parseDouble(topLeftLongString);
+            bottomRightLat = Double.parseDouble(bottomRightLatString);
+            bottomRightLong = Double.parseDouble(bottomRightLongString);
+
+        } catch (NumberFormatException e) {
+            topLeftLat = MAX_LATITUDE;
+            topLeftLong = MIN_LONGITUDE;
+            bottomRightLat = MIN_LATITUDE;
+            bottomRightLong = MAX_LONGITUDE;
+        }
+
+        photoGallery = db.readPhotosLocationFilter(topLeftLat, topLeftLong, bottomRightLat, bottomRightLong);
+    }
+
+    private void populateGalleryByKeywords(Intent data) {
+        String keywords = data.getStringExtra("KEYWORDS");
+        photoGallery = db.readPhotosKeywordFilter(keywords);
     }
 
     public void takePicture(View v) {

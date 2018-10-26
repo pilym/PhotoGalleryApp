@@ -192,6 +192,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return photos;
     }
 
+    public List<Photo> readPhotosKeywordFilter(String keyword) {
+        List<Photo> photos = new ArrayList<>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + Photo.TABLE_NAME +
+                " WHERE " + Photo.COLUMN_CAPTION +
+                " LIKE '%" + keyword + "%'" +
+                " ORDER BY " + Photo.COLUMN_TIMESTAMP + " ASC";
+
+        // get readable database
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Photo photo = new Photo();
+                photo.setId(cursor.getInt(cursor.getColumnIndex(Photo.COLUMN_ID)));
+                photo.setTimestamp(cursor.getString(cursor.getColumnIndex(Photo.COLUMN_TIMESTAMP)));
+                photo.setLatitude(cursor.getDouble(cursor.getColumnIndex(Photo.COLUMN_LAT)));
+                photo.setLongitude(cursor.getDouble(cursor.getColumnIndex(Photo.COLUMN_LONG)));
+                photo.setCaption(cursor.getString(cursor.getColumnIndex(Photo.COLUMN_CAPTION)));
+                photo.setImage(cursor.getBlob(cursor.getColumnIndex(Photo.COLUMN_IMAGE)));
+
+                photos.add(photo);
+            } while (cursor.moveToNext());
+        }
+
+        // close db connection
+        cursor.close();
+        db.close();
+
+        return photos;
+    }
+
     public int getPhotoCount() {
         String countQuery = "SELECT  * FROM " + Photo.TABLE_NAME;
         SQLiteDatabase db = this.getReadableDatabase();
